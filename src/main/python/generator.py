@@ -1,7 +1,6 @@
 import random
 import string
 from dataclasses import dataclass
-from functools import reduce
 from typing import *
 
 
@@ -37,7 +36,7 @@ def gen_random(data: Data) -> str:
             return str(random.randint(mn, mx))
         case String(mn_len, mx_len):
             length = random.randint(mn_len, mx_len)
-            return reduce(str.__add__, [gen_random(Char()) for x in range(length)])
+            return "".join([gen_random(Char()) for _ in range(length)])
 
 
 def gen_all(data: Data) -> List[str]:
@@ -60,7 +59,7 @@ class Generator:
     def __init__(self, stdin: Input) -> None:
         self.__stdin__ = stdin
 
-    def gen(self) -> List[str]:
+    def gen(self) -> Iterable[str]:
         pass
 
 
@@ -71,6 +70,7 @@ class GeneratorRAND(Generator):
     def gen(self) -> Iterable[str]:
         for line in self.__stdin__:
             for data in line:
+                print(data)
                 yield gen_random(data)
 
 
@@ -78,5 +78,5 @@ class GeneratorALL(Generator):
     def __init__(self, stdin: Input) -> None:
         super().__init__(stdin)
 
-    def gen(self) -> List[str]:
+    def gen(self) -> Iterable[str]:
         pass
