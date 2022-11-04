@@ -1,3 +1,5 @@
+import subprocess
+from os import system
 from typing import *
 
 from generator import Input, Char, Int, String
@@ -43,18 +45,28 @@ class Program:
     """
 
     def __init__(self, path: str) -> None:
-        pass
+        self.__path__ = path
 
-    def run(self, input_file_path: str) -> Tuple[str, int]:
+    def run(self, input_file: IO) -> Tuple[bytes, int]:
         """run this program and generate (stdout, exit code)
 
         Args:
-            input_file_path (str): path to generated input file
+            input_file (IO): path to generated input file
 
         Returns:
             Tuple[str, int]: stdout and exit code
         """
-        pass
+        path = self.__path__
+        if path.endswith(".cpp"):
+            system(f"g++ {path} -O3 -o ./tmp.out")
+        elif path.endswith(".c"):
+            system(f"gcc {path} -O3 -o ./tmp.out")
+        else:
+            raise RuntimeError()
+        subp = subprocess.Popen(["./tmp.out"], stdout=subprocess.PIPE, stdin=input_file)
+        subp.wait(timeout=2)
+        output = subp.stdout.read()
+        return output, subp.returncode
 
 
 class Problem:
