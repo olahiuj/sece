@@ -1,20 +1,41 @@
 from typing import *
-from generator import Input
+
+from generator import Input, Char, Int, String
 
 
-class Parser():
+class ParserException(Exception):
+    def __init__(self, message: str):
+        super(self).__init__(message)
+
+
+class Parser:
     """stdin_format.txt parser
 
     This is the parser that parses stdin_format.txt and returns
     a list of lines. Each line contains a list of Data.
     """
 
-    @classmethod
-    def parse(input: str) -> Input:
-        pass
+    @staticmethod
+    def parse(stdin_format: str) -> Input:
+        result = []
+        for line in stdin_format.strip().split('\n'):
+            line_result = []
+            for token in line.strip().split():
+                if token[0] == 'i':
+                    (l, r) = token.split(',')
+                    line_result.append(Int(int(l.removeprefix('int(')), int(r.removesuffix(')'))))
+                elif token[0] == 's':
+                    (l, r) = token.split(',')
+                    line_result.append(String(int(l.removeprefix('string(')), int(r.removesuffix(')'))))
+                elif token[0] == 'c':
+                    line_result.append(Char())
+                else:
+                    raise ParserException(f"unknown token: {token}")
+            result.append(line_result)
+        return result
 
 
-class Program():
+class Program:
     """one program source code
 
     This is the internal representation of source program found
@@ -36,7 +57,7 @@ class Program():
         pass
 
 
-class Problem():
+class Problem:
     """a subfolder of the input folder
 
     This class represents exactly one subfolder under the input
@@ -47,8 +68,8 @@ class Problem():
     def __init__(self, folder: str) -> None:
         pass
 
-    def programs() -> List[Program]:
+    def programs(self) -> List[Program]:
         pass
 
-    def get_input_format() -> Input:
+    def get_input_format(self) -> Input:
         pass
