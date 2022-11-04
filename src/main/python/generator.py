@@ -1,5 +1,8 @@
-from typing import *
+import random
+import string
 from dataclasses import dataclass
+from functools import reduce
+from typing import *
 
 
 @dataclass
@@ -29,11 +32,12 @@ Input = List[InputLine]
 def gen_random(data: Data) -> str:
     match data:
         case Char():
-            pass
+            return random.choice(string.ascii_letters)
         case Int(mn, mx):
-            pass
+            return str(random.randint(mn, mx))
         case String(mn_len, mx_len):
-            pass
+            length = random.randint(mn_len, mx_len)
+            return reduce(str.__add__, [gen_random(Char()) for x in range(length)])
 
 
 def gen_all(data: Data) -> List[str]:
@@ -46,31 +50,33 @@ def gen_all(data: Data) -> List[str]:
             pass
 
 
-class Genrator():
+class Generator:
     """input generator
 
     Inherit this class and override method gen() to create
     more input generators.
     """
 
-    def __init__(self, input: Input) -> None:
-        self.__input__ = input
+    def __init__(self, stdin: Input) -> None:
+        self.__stdin__ = stdin
 
     def gen(self) -> List[str]:
         pass
 
 
-class Generator_ONCE(Generator):
-    def __init__(self, input: Input) -> None:
-        super().__init__(input)
+class GeneratorRAND(Generator):
+    def __init__(self, stdin: Input) -> None:
+        super().__init__(stdin)
 
-    def gen(self) -> List[str]:
-        pass
+    def gen(self) -> Iterable[str]:
+        for line in self.__stdin__:
+            for data in line:
+                yield gen_random(data)
 
 
-class Generator_ALL(Generator):
-    def __init__(self, input: Input) -> None:
-        super().__init__(input)
+class GeneratorALL(Generator):
+    def __init__(self, stdin: Input) -> None:
+        super().__init__(stdin)
 
     def gen(self) -> List[str]:
         pass
