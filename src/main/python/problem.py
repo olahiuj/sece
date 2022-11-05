@@ -70,6 +70,10 @@ class Program:
         output = subp.stdout.read()
         return output, subp.returncode
 
+    @cache
+    def get_path(self) -> str:
+        return self.__path__
+
 
 class Problem:
     """a subfolder of the input folder
@@ -80,6 +84,7 @@ class Problem:
     """
 
     def __init__(self, folder: str) -> None:
+        self.__folder__ = folder
         self.__programs__ = []
         self.__stdin_format__ = []
         for file in os.listdir(folder):
@@ -100,3 +105,7 @@ class Problem:
     @cache
     def get_input_format(self) -> Input:
         return Parser.parse(''.join(self.__stdin_format__))
+
+    @cache
+    def get_folder(self) -> str:
+        return self.__folder__

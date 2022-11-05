@@ -14,6 +14,10 @@ class ProgramTest(unittest.TestCase):
             (b"YES", 0),
             prog.run(tempfile.TemporaryFile())
         )
+        self.assertEqual(
+            "127473352.cpp",
+            os.path.basename(prog.get_path())
+        )
 
 
 if __name__ == '__main__':
