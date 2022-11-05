@@ -18,6 +18,10 @@ class SimpleProblemTest(unittest.TestCase):
             [[Int(1, 16), Int(1, 16)]],
             prob.get_input_format()
         )
+        self.assertEqual(
+            "50A",
+            os.path.basename(os.path.dirname(prob.get_folder()))
+        )
 
     def test_4A(self):
         prob = Problem(f"{UNITTEST_FOLDER_PATH}/../input/4A/")
@@ -28,6 +32,10 @@ class SimpleProblemTest(unittest.TestCase):
         self.assertEqual(
             [[Int(1, 100)]],
             prob.get_input_format()
+        )
+        self.assertEqual(
+            "4A",
+            os.path.basename(os.path.dirname(prob.get_folder()))
         )
 
 
