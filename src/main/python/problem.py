@@ -1,4 +1,6 @@
+import os
 import subprocess
+from functools import cache
 from os import system
 from typing import *
 
@@ -78,10 +80,23 @@ class Problem:
     """
 
     def __init__(self, folder: str) -> None:
-        pass
+        self.__programs__ = []
+        self.__stdin_format__ = []
+        for file in os.listdir(folder):
+            abs_file_path = folder + file
+            if file.endswith(".c") or file.endswith(".cpp"):
+                self.__programs__.append(Program(abs_file_path))
+            elif file == "stdin_format.txt":
+                with open(abs_file_path) as fp:
+                    self.__stdin_format__ = fp.readlines()
 
+        if not self.__stdin_format__:
+            raise RuntimeError("stdin_format.txt not found")
+
+    @cache
     def programs(self) -> List[Program]:
-        pass
+        return self.__programs__
 
+    @cache
     def get_input_format(self) -> Input:
-        pass
+        return Parser.parse(''.join(self.__stdin_format__))
