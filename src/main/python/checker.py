@@ -1,12 +1,13 @@
-from typing import *
-from problem import Program
+import tempfile
+
 from generator import Generator
+from problem import Program
 
 
-class Checker():
+class Checker:
     """equivalence checker"""
 
-    @classmethod
+    @staticmethod
     def check(p1: Program, p2: Program, generator: Generator) -> bool:
         """equivalence checker
 
@@ -18,4 +19,9 @@ class Checker():
         Returns:
             bool: if they're equivalent
         """
-        pass
+        data_in = generator.gen()
+        input_file = tempfile.TemporaryFile("w+")
+        input_file.writelines(data_in)
+        result1 = p1.run(input_file)
+        result2 = p2.run(input_file)
+        return result1 == result2
