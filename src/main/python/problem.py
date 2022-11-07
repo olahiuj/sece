@@ -1,10 +1,14 @@
 import os
-import subprocess
 from functools import cache
-from os import system
 from typing import *
 
-from generator import Input, Char, Int, String
+from checker import Checker
+from generator import Input, Char, Int, String, GeneratorRAND
+from program import Program
+
+StrPair = Tuple[str, str]
+PairList = List[StrPair]
+ProbResult = Tuple[PairList, PairList]
 
 
 class ParserException(Exception):
@@ -37,42 +41,6 @@ class Parser:
                     raise ParserException(f"unknown token: {token}")
             result.append(line_result)
         return result
-
-
-class Program:
-    """one program source code
-
-    This is the internal representation of source program found
-    in each subfolder of the input folder.
-    """
-
-    def __init__(self, path: str) -> None:
-        self.__path__ = path
-
-    def run(self, input_file: IO) -> Tuple[bytes, int]:
-        """run this program and generate (stdout, exit code)
-
-        Args:
-            input_file (IO): path to generated input file
-
-        Returns:
-            Tuple[str, int]: stdout and exit code
-        """
-        path = self.__path__
-        if path.endswith(".cpp"):
-            system(f"g++ {path} -O3 -o ./tmp.out")
-        elif path.endswith(".c"):
-            system(f"gcc {path} -O3 -o ./tmp.out")
-        else:
-            raise RuntimeError()
-        subp = subprocess.Popen(["./tmp.out"], stdout=subprocess.PIPE, stdin=input_file)
-        subp.wait(timeout=2)
-        output = subp.stdout.read()
-        return output, subp.returncode
-
-    @cache
-    def get_path(self) -> str:
-        return self.__path__
 
 
 class Problem:
@@ -109,3 +77,18 @@ class Problem:
     @cache
     def get_folder(self) -> str:
         return self.__folder__
+
+    def solve(self) -> ProbResult:
+        eq, neq = [], []
+        programs = self.programs()
+        for i1 in range(len(programs)):
+            for i2 in range(i1):
+                p1, p2 = programs[i1], programs[i2]
+                stdin = self.get_input_format()
+                g = GeneratorRAND(stdin)
+                if Checker.check(p1, p2, g):
+                    eq.append((p1.get_path(), p2.get_path()))
+                else:
+                    neq.append((p1.get_path(), p2.get_path()))
+
+        return eq, neq

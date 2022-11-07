@@ -1,7 +1,7 @@
 import tempfile
 
 from generator import Generator
-from problem import Program
+from program import Program
 
 
 class Checker:

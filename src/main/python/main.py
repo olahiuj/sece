@@ -1,21 +1,18 @@
 #!/bin/python
 import os
 import sys
+from typing import *
 
-import checker
-from generator import GeneratorRAND
-from problem import Problem
+from problem import Problem, ProbResult
 
 
-def main(input_folder: str) -> None:
+def main(input_folder: str) -> List[ProbResult]:
+    result = []
     for p in os.listdir(input_folder):
         prob = Problem(input_folder + p + "/")
-        programs = prob.programs()
-        for p1 in range(len(programs)):
-            for p2 in range(p1):
-                stdin = prob.get_input_format()
-                g = GeneratorRAND(stdin)
-                print(p1, p2, checker.Checker.check(programs[p1], programs[p2], g))
+        print(f"==={prob.get_folder()}===")
+        result.append(prob.solve())
+    return result
 
 
 if __name__ == "__main__":
