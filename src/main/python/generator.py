@@ -69,9 +69,7 @@ class GeneratorRAND(Generator):
 
     def gen(self) -> Iterable[str]:
         for line in self.__stdin__:
-            for data in line:
-                print(data)
-                yield gen_random(data)
+            yield " ".join(map(gen_random, line))
 
 
 class GeneratorALL(Generator):
