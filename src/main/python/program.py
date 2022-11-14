@@ -1,7 +1,26 @@
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from functools import cache
 from typing import *
+
+
+@dataclass
+class SUCCESS:
+    pass
+
+
+@dataclass
+class TIMEOUT:
+    pass
+
+
+@dataclass
+class CRASHED:
+    exit_code: int
+
+
+ProgramResult = SUCCESS | TIMEOUT | CRASHED
 
 
 class Program:
@@ -14,14 +33,14 @@ class Program:
     def __init__(self, path: str) -> None:
         self.__path__ = path
 
-    def run(self, input_file: IO) -> Tuple[bytes, int]:
-        """run this program and generate (stdout, exit code)
+    def run(self, input_file: IO) -> Tuple[bytes, ProgramResult]:
+        """run this program and generate (stdout, result)
 
         Args:
             input_file (IO): path to generated input file
 
         Returns:
-            Tuple[str, int]: stdout and exit code
+            Tuple[str, ProgramResult]: (stdout, SUCCESS | TIMEOUT | CRASHED(exit_code))
         """
         path = self.__path__
         executable = tempfile.NamedTemporaryFile("w+")
@@ -45,9 +64,16 @@ class Program:
             raise RuntimeError()
         # system(f"{compiler} {path} -O3 -o {executable.name} &> /dev/null")
         subp = subprocess.Popen([executable.name], stdout=subprocess.PIPE, stdin=input_file)
-        subp.wait(timeout=2)
-        output = subp.stdout.read()
-        return output, subp.returncode
+        try:
+            subp.wait(timeout=2)
+            output = subp.stdout.read()
+        except subprocess.TimeoutExpired as e:
+            return bytes(), TIMEOUT()
+
+        if subp.returncode == 0:
+            return output, SUCCESS()
+        else:
+            return output, CRASHED(subp.returncode)
 
     @cache
     def get_path(self) -> str:

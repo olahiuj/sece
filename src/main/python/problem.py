@@ -1,14 +1,10 @@
 import os
-from functools import cache
-from typing import *
 
 from checker import Checker
 from generator import Input, Char, Int, String, GeneratorRAND
-from program import Program
+from program import *
 
-StrPair = Tuple[str, str]
-PairList = List[StrPair]
-ProbResult = Tuple[PairList, PairList]
+ProblemResult = Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]
 
 
 class ParserException(Exception):
@@ -78,7 +74,25 @@ class Problem:
     def get_folder(self) -> str:
         return self.__folder__
 
-    def solve(self) -> ProbResult:
+    def identify_abonormals(self):
+        result = []
+        prog: Program
+        for prog in self.programs():
+            stdin = self.get_input_format()
+            generator = GeneratorRAND(stdin)
+            data_in = generator.gen()
+            input_file = tempfile.TemporaryFile("w+")
+            input_file.writelines(data_in)
+            match prog.run(input_file)[1]:
+                case SUCCESS():
+                    pass
+                case CRASHED(_):
+                    pass
+                case TIMEOUT():
+                    result.append(prog)
+        return result
+
+    def solve(self) -> ProblemResult:
         eq, neq = [], []
         programs = self.programs()
         for i1 in range(len(programs)):
