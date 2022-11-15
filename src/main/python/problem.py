@@ -1,10 +1,14 @@
-import os
+import dataclasses
 
 from checker import Checker
 from generator import Input, Char, Int, String, GeneratorRAND
 from program import *
 
-ProblemResult = Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]
+
+@dataclasses.dataclass
+class ProblemResult:
+    equal_pairs: List[Tuple[str, str]]
+    inequal_pairs: List[Tuple[str, str]]
 
 
 class ParserException(Exception):
@@ -74,24 +78,6 @@ class Problem:
     def get_folder(self) -> str:
         return self.__folder__
 
-    def identify_abonormals(self):
-        result = []
-        prog: Program
-        for prog in self.programs():
-            stdin = self.get_input_format()
-            generator = GeneratorRAND(stdin)
-            data_in = generator.gen()
-            input_file = tempfile.TemporaryFile("w+")
-            input_file.writelines(data_in)
-            match prog.run(input_file)[1]:
-                case SUCCESS():
-                    pass
-                case CRASHED(_):
-                    pass
-                case TIMEOUT():
-                    result.append(prog)
-        return result
-
     def solve(self) -> ProblemResult:
         eq, neq = [], []
         programs = self.programs()
@@ -105,4 +91,4 @@ class Problem:
                 else:
                     neq.append((p1.get_path(), p2.get_path()))
 
-        return eq, neq
+        return ProblemResult(eq, neq)

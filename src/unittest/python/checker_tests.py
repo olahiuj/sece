@@ -1,7 +1,5 @@
 import unittest
 
-from checker import Checker
-from generator import GeneratorRAND
 from problem import *
 
 UNITTEST_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))

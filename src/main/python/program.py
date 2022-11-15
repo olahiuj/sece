@@ -1,3 +1,4 @@
+import os
 import subprocess
 import tempfile
 from dataclasses import dataclass
@@ -31,21 +32,16 @@ class Program:
     """
 
     def __init__(self, path: str) -> None:
+        self.__executable__ = None
         self.__path__ = path
 
-    def run(self, input_file: IO) -> Tuple[bytes, ProgramResult]:
-        """run this program and generate (stdout, result)
-
-        Args:
-            input_file (IO): path to generated input file
-
-        Returns:
-            Tuple[str, ProgramResult]: (stdout, SUCCESS | TIMEOUT | CRASHED(exit_code))
-        """
+    def compile(self) -> None:
+        # system(f"{compiler} {path} -O3 -o {executable.name} &> /dev/null")
         path = self.__path__
         executable = tempfile.NamedTemporaryFile("w+")
         executable.write("hh")
         executable.close()
+        self.__executable__ = executable
 
         if path.endswith(".cpp"):
             compiler = "g++"
@@ -62,8 +58,27 @@ class Program:
         pcomp.wait(timeout=10)
         if pcomp.returncode != 0:
             raise RuntimeError()
-        # system(f"{compiler} {path} -O3 -o {executable.name} &> /dev/null")
-        subp = subprocess.Popen([executable.name], stdout=subprocess.PIPE, stdin=input_file)
+
+    def get_executable(self) -> IO:
+        if self.__executable__ is None or not os.path.exists(self.__executable__.name):
+            self.compile()
+        return self.__executable__
+
+    def run(self, input_file: IO) -> Tuple[bytes, ProgramResult]:
+        """run this program and generate (stdout, result)
+
+        Args:
+            input_file (IO): path to generated input file
+
+        Returns:
+            Tuple[str, ProgramResult]: (stdout, SUCCESS | TIMEOUT | CRASHED(exit_code))
+        """
+        subp = subprocess.Popen(
+            [self.get_executable().name],
+            stdin=input_file,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL
+        )
         try:
             subp.wait(timeout=2)
             output = subp.stdout.read()
