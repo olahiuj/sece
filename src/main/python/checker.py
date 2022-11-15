@@ -6,6 +6,7 @@ from program import Program
 
 class Checker:
     """equivalence checker"""
+    RUN_TIMES: int = 4
 
     @staticmethod
     def check(p1: Program, p2: Program, generator: Generator) -> bool:
@@ -19,9 +20,12 @@ class Checker:
         Returns:
             bool: if they're equivalent
         """
-        data_in = generator.gen()
-        input_file = tempfile.TemporaryFile("w+")
-        input_file.writelines(data_in)
-        result1 = p1.run(input_file)
-        result2 = p2.run(input_file)
-        return result1 == result2
+        for _ in range(Checker.RUN_TIMES):
+            data_in = generator.gen()
+            input_file = tempfile.TemporaryFile("w+")
+            input_file.writelines(data_in)
+            result1 = p1.run(input_file)
+            result2 = p2.run(input_file)
+            if result1 != result2:
+                return False
+        return True
