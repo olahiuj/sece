@@ -9,7 +9,7 @@ UNITTEST_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 
 class SimpleMainTest(unittest.TestCase):
     def test_input(self):
-        sys.argv = ["sece", f"{UNITTEST_FOLDER_PATH}/../input/"]
+        sys.argv = ["sece", f"{UNITTEST_FOLDER_PATH}/../input/", "/tmp/output/"]
         result = main()
         # only checks folder count
         self.assertEqual(
