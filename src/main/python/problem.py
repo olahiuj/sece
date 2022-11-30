@@ -119,10 +119,10 @@ class Problem:
                         ui_.main_loop()
 
                         if EQ:
-                            eq.append((p1, p2))
+                            eq.append((p1.get_path(), p2.get_path()))
                             tr.add(p1, p2)
                         elif NEQ:
-                            neq.append((p1, p2))
+                            neq.append((p1.get_path(), p2.get_path()))
                         else:
                             raise RuntimeError('no button pressed')
 
