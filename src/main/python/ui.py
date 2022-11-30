@@ -66,7 +66,7 @@ class UI:
         self.__left_file_name__.config(text=filename1)
         self.__right_file_name__.config(text=filename2)
         for d in diff_result:
-            cont = d['cont']
+            cont = d['line']
             match d['type']:
                 case 'L':
                     self.__left_text__.append_line(cont, 'red')
@@ -78,8 +78,12 @@ class UI:
                     self.__left_text__.append_line(cont, 'white')
                     self.__right_text__.append_line(cont, 'white')
                 case 'D':
-                    # TODO: lines with internal differences
-                    pass
+                    for (i, c) in enumerate(d['line']):
+                        self.__left_text__.append(c, 'darkred' if i in d['left_diff'] else 'red')
+                    for (i, c) in enumerate(d['newline']):
+                        self.__right_text__.append(c, 'darkgreen' if i in d['right_diff'] else 'red')
+                    self.__left_text__.new_line()
+                    self.__right_text__.new_line()
 
     def eq_action(self, func):
         self.__eq_button__.config(command=func)
@@ -115,17 +119,26 @@ class TextFrame:
         self.__text_frame__.yview_moveto(position)
 
     @modifies_text
-    def new_line(self, color):
-        self.__text_frame__.insert(tkinter.END, '\n', color)
+    def new_line(self, color=None):
+        if color:
+            self.__text_frame__.insert(tkinter.END, '\n', color)
+        else:
+            self.__text_frame__.insert(tkinter.END, '\n')
 
     @modifies_text
-    def append(self, cont, color):
-        self.__text_frame__.insert(
-            tkinter.END,
-            cont,
-            color
-        )
+    def append(self, cont, color=None):
+        if color:
+            self.__text_frame__.insert(
+                tkinter.END,
+                cont,
+                color
+            )
+        else:
+            self.__text_frame__.insert(
+                tkinter.END,
+                cont
+            )
 
-    def append_line(self, cont, color):
+    def append_line(self, cont, color=None):
         self.append(cont, color)
         self.new_line(color)
