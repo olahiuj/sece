@@ -1,8 +1,13 @@
 import dataclasses
 
+import diff
+import ui
 from checker import Checker
 from generator import Input, Char, Int, String, GeneratorRAND
 from program import *
+from closure import Closure
+
+EQ, NEQ = False, False
 
 
 @dataclasses.dataclass
@@ -78,17 +83,47 @@ class Problem:
     def get_folder(self) -> str:
         return self.__folder__
 
-    def solve(self) -> ProblemResult:
-        eq, neq = [], []
-        programs = self.programs()
+    def solve(self, is_manual: bool) -> ProblemResult:
+        neq, eq = [], []
+        tr = Closure(set())
+        programs: List[Program] = self.programs()
         for i1 in range(len(programs)):
             for i2 in range(i1):
                 p1, p2 = programs[i1], programs[i2]
-                stdin = self.get_input_format()
-                g = GeneratorRAND(stdin)
-                if Checker.check(p1, p2, g):
-                    eq.append((p1.get_path(), p2.get_path()))
-                else:
-                    neq.append((p1.get_path(), p2.get_path()))
+                if not tr.contains(p1, p2):
+                    if not is_manual:
+                        stdin = self.get_input_format()
+                        g = GeneratorRAND(stdin)
+                        if Checker.check(p1, p2, g):
+                            eq.append((p1.get_path(), p2.get_path()))
+                            tr.add(p1, p2)
+                        else:
+                            neq.append((p1.get_path(), p2.get_path()))
+                    else:
+                        ui_ = ui.UI()
+                        diff_result = diff.DiffParser(p1, p2).parse_diff()
+                        ui_.update_text(diff_result, p1.get_path(), p2.get_path())
+                        global EQ, NEQ
+                        EQ, NEQ = False, False
+
+                        def eq_callback(*_, **__):
+                            global EQ, NEQ
+                            EQ, NEQ = True, False
+
+                        def neq_callback(*_, **__):
+                            global EQ, NEQ
+                            EQ, NEQ = False, True
+
+                        ui_.eq_action(eq_callback)
+                        ui_.neq_action(neq_callback)
+                        ui_.main_loop()
+
+                        if EQ:
+                            eq.append((p1, p2))
+                            tr.add(p1, p2)
+                        elif NEQ:
+                            neq.append((p1, p2))
+                        else:
+                            raise RuntimeError('no button pressed')
 
         return ProblemResult(eq, neq)
