@@ -41,7 +41,7 @@ class DiffParser:
             lineno += 1
 
     def __match_diff(self, lineno, pattern):
-        if lineno + len(pattern) >= len(self.__diff__):
+        if lineno + len(pattern) > len(self.__diff__):
             return False
         for i in range(len(pattern)):
             if self.__diff__[lineno + i][:2] != pattern[i]:
