@@ -91,39 +91,39 @@ class Problem:
             for i2 in range(i1):
                 p1, p2 = programs[i1], programs[i2]
                 if not tr.contains(p1, p2):
-                    if not is_manual:
-                        stdin = self.get_input_format()
-                        g = GeneratorRAND(stdin)
-                        if Checker.check(p1, p2, g):
-                            eq.append((p1.get_path(), p2.get_path()))
-                            tr.add(p1, p2)
-                        else:
-                            neq.append((p1.get_path(), p2.get_path()))
+                    stdin = self.get_input_format()
+                    g = GeneratorRAND(stdin)
+                    if not Checker.check(p1, p2, g):
+                        neq.append((p1.get_path(), p2.get_path()))
                     else:
-                        ui_ = ui.UI()
-                        diff_result = diff.DiffParser(p1, p2).parse_diff()
-                        ui_.update_text(diff_result, p1.get_path(), p2.get_path())
-                        global EQ, NEQ
-                        EQ, NEQ = False, False
-
-                        def eq_callback(*_, **__):
-                            global EQ, NEQ
-                            EQ, NEQ = True, False
-
-                        def neq_callback(*_, **__):
-                            global EQ, NEQ
-                            EQ, NEQ = False, True
-
-                        ui_.eq_action(eq_callback)
-                        ui_.neq_action(neq_callback)
-                        ui_.main_loop()
-
-                        if EQ:
+                        if not is_manual:
                             eq.append((p1.get_path(), p2.get_path()))
                             tr.add(p1, p2)
-                        elif NEQ:
-                            neq.append((p1.get_path(), p2.get_path()))
                         else:
-                            raise RuntimeError('no button pressed')
+                            ui_ = ui.UI()
+                            diff_result = diff.DiffParser(p1, p2).parse_diff()
+                            ui_.update_text(diff_result, p1.get_path(), p2.get_path())
+                            global EQ, NEQ
+                            EQ, NEQ = False, False
+
+                            def eq_callback(*_, **__):
+                                global EQ, NEQ
+                                EQ, NEQ = True, False
+
+                            def neq_callback(*_, **__):
+                                global EQ, NEQ
+                                EQ, NEQ = False, True
+
+                            ui_.eq_action(eq_callback)
+                            ui_.neq_action(neq_callback)
+                            ui_.main_loop()
+
+                            if EQ:
+                                eq.append((p1.get_path(), p2.get_path()))
+                                tr.add(p1, p2)
+                            elif NEQ:
+                                neq.append((p1.get_path(), p2.get_path()))
+                            else:
+                                raise RuntimeError('no button pressed')
 
         return ProblemResult(eq, neq)
