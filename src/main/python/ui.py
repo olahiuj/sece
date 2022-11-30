@@ -3,6 +3,8 @@ import tkinter
 
 class UI:
     def __init__(self):
+        self.__neq_action__ = None
+        self.__eq_action__ = None
         self.__main_window__ = tkinter.Tk()
         self.__main_window__.title('sece diff')
         self.__main_window__.rowconfigure(0, weight=0)
@@ -85,11 +87,21 @@ class UI:
                     self.__left_text__.new_line()
                     self.__right_text__.new_line()
 
+    def _eq_action_wrapper_(self):
+        self.__eq_action__()
+        self.__main_window__.destroy()
+
+    def _neq_action_wrapper_(self):
+        self.__neq_action__()
+        self.__main_window__.destroy()
+
     def eq_action(self, func):
-        self.__eq_button__.config(command=func)
+        self.__eq_action__ = func
+        self.__eq_button__.config(command=self._eq_action_wrapper_)
 
     def neq_action(self, func):
-        self.__neq_button__.config(command=func)
+        self.__neq_action__ = func
+        self.__neq_button__.config(command=self._neq_action_wrapper_)
 
     def main_loop(self):
         self.__main_window__.mainloop()

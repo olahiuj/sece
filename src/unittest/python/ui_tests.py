@@ -13,6 +13,8 @@ def test_program_pair(filename1, filename2):
     diff_parser = DiffParser(prog1, prog2)
     diff_result = diff_parser.parse_diff()
     ui_ = UI()
+    ui_.eq_action(lambda: print('eq'))
+    ui_.neq_action(lambda: print('neq'))
     ui_.update_text(diff_result, prog1.get_path(), prog2.get_path())
     ui_.main_loop()
 
