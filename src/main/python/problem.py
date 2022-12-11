@@ -103,7 +103,9 @@ class Problem:
         for (index1, program1) in enumerate(programs):
             for index2 in range(index1):
                 program2 = programs[index2]
-                if not transitive_closure.contains(program1, program2):
+                if transitive_closure.contains(program1, program2):
+                    eq_result.append((program1.get_path(), program2.get_path()))
+                else:
                     gen = GeneratorRAND(self.get_input_format())
                     if not Checker().check(program1, program2, gen):
                         neq_result.append((program1.get_path(), program2.get_path()))
