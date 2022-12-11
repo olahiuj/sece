@@ -11,7 +11,7 @@ class SimpleCheckerTest(unittest.TestCase):
         p2 = Program(f"{UNITTEST_FOLDER_PATH}/../input/4A/101036360.cpp")
         self.assertEqual(
             False,
-            Checker.check(p1, p2, GeneratorRAND([[Int(1, 100)]]))
+            Checker().check(p1, p2, GeneratorRAND([[Int(1, 100)]]))
         )
 
     def test_YES_YES(self):
@@ -19,7 +19,7 @@ class SimpleCheckerTest(unittest.TestCase):
         p2 = Program(f"{UNITTEST_FOLDER_PATH}/../input/4A/134841308.cpp")
         self.assertEqual(
             True,
-            Checker.check(p1, p2, GeneratorRAND([[Int(1, 100)]]))
+            Checker().check(p1, p2, GeneratorRAND([[Int(1, 100)]]))
         )
 
 

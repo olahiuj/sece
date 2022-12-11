@@ -1,7 +1,9 @@
+"""This module provides user interface for manual equivalence checking."""
 import tkinter
 
 
 class UI:
+    """user interface for manual checking"""
     def __init__(self):
         self.__neq_action__ = None
         self.__eq_action__ = None
@@ -56,20 +58,23 @@ class UI:
         )
         self.__neq_button__.grid(row=2, column=1, sticky=tkinter.NSEW)
 
-    def bar_on_scroll(self, _, position, type=None):
+    def bar_on_scroll(self, _, position):
+        """actions done when scroll bar is scrolled"""
         self.__left_text__.scroll_to(position)
         self.__right_text__.scroll_to(position)
 
-    def text_on_scroll(self, first, last, type=None):
+    def text_on_scroll(self, first, last):
+        """actions done when text area is scrolled"""
         self.bar_on_scroll(None, first)
         self.__vertical_scroll_bar__.set(first, last)
 
     def update_text(self, diff_result, filename1, filename2):
+        """update text areas with contents to be confirmed"""
         self.__left_file_name__.config(text=filename1)
         self.__right_file_name__.config(text=filename2)
-        for d in diff_result:
-            cont = d['line']
-            match d['type']:
+        for result in diff_result:
+            cont = result['line']
+            match result['type']:
                 case 'L':
                     self.__left_text__.append_line(cont, 'red')
                     self.__right_text__.new_line('gray')
@@ -80,10 +85,16 @@ class UI:
                     self.__left_text__.append_line(cont, 'white')
                     self.__right_text__.append_line(cont, 'white')
                 case 'D':
-                    for (i, c) in enumerate(d['line']):
-                        self.__left_text__.append(c, 'darkred' if i in d['left_diff'] else 'red')
-                    for (i, c) in enumerate(d['newline']):
-                        self.__right_text__.append(c, 'darkgreen' if i in d['right_diff'] else 'red')
+                    for (i, character) in enumerate(result['line']):
+                        self.__left_text__.append(
+                            character,
+                            'darkred' if i in result['left_diff'] else 'red'
+                        )
+                    for (i, character) in enumerate(result['newline']):
+                        self.__right_text__.append(
+                            character,
+                            'darkgreen' if i in result['right_diff'] else 'red'
+                        )
                     self.__left_text__.new_line()
                     self.__right_text__.new_line()
 
@@ -96,19 +107,24 @@ class UI:
         self.__main_window__.destroy()
 
     def eq_action(self, func):
+        """eq button callback registry"""
         self.__eq_action__ = func
         self.__eq_button__.config(command=self._eq_action_wrapper_)
 
     def neq_action(self, func):
+        """neq button callback registry"""
         self.__neq_action__ = func
         self.__neq_button__.config(command=self._neq_action_wrapper_)
 
     def main_loop(self):
+        """mainloop"""
         self.__main_window__.mainloop()
 
 
 def modifies_text(func):
+    """decorator to unfreeze text area. especially for text modifiers"""
     def wrapped_func(*args, **kwargs):
+        """decorated method"""
         self = args[0]
         self.__text_frame__.config(state=tkinter.NORMAL)
         func(*args, **kwargs)
@@ -118,6 +134,7 @@ def modifies_text(func):
 
 
 class TextFrame:
+    """A wrapper class for text area widget."""
     def __init__(self, text_frame):
         self.__text_frame__ = text_frame
         self.__text_frame__.tag_configure('red', background='#ffc4c4')
@@ -128,10 +145,12 @@ class TextFrame:
         self.__text_frame__.tag_configure('white', background='#ffffff')
 
     def scroll_to(self, position):
+        """scroll to specific position"""
         self.__text_frame__.yview_moveto(position)
 
     @modifies_text
     def new_line(self, color=None):
+        """append newline to text area with color"""
         if color:
             self.__text_frame__.insert(tkinter.END, '\n', color)
         else:
@@ -139,6 +158,7 @@ class TextFrame:
 
     @modifies_text
     def append(self, cont, color=None):
+        """append content to text area with color"""
         if color:
             self.__text_frame__.insert(
                 tkinter.END,
@@ -152,5 +172,6 @@ class TextFrame:
             )
 
     def append_line(self, cont, color=None):
+        """append content to text area with color and start a newline"""
         self.append(cont, color)
         self.new_line(color)

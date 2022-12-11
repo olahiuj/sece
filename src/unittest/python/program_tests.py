@@ -1,7 +1,9 @@
 import os.path
 import unittest
+import tempfile
 
-from problem import *
+from program import SUCCESS
+from problem import Program
 
 UNITTEST_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 

@@ -1,10 +1,13 @@
+"""This module provides Problem abstraction for each subfolder under input/"""
 import dataclasses
+import os
+from typing import List, Tuple
 
 import diff
 import ui
 from checker import Checker
 from generator import Input, Char, Int, String, GeneratorRAND
-from program import *
+from program import Program
 from closure import Closure
 
 EQ, NEQ = False, False
@@ -12,47 +15,56 @@ EQ, NEQ = False, False
 
 @dataclasses.dataclass
 class ProblemResult:
+    """a list of equal and inequal pairs of program names"""
     equal_pairs: List[Tuple[str, str]]
     inequal_pairs: List[Tuple[str, str]]
 
 
-class ParserException(Exception):
+class ParserException(BaseException):
+    """ParserException is thrown when it fails to parse stdin_format.txt"""
     def __init__(self, message: str):
         super(self).__init__(message)
 
 
-class Parser:
+def parse(stdin_format: str) -> Input:
     """stdin_format.txt parser
 
     This is the parser that parses stdin_format.txt and returns
     a list of lines. Each line contains a list of Data.
     """
-
-    @staticmethod
-    def parse(stdin_format: str) -> Input:
-        result = []
-        for line in stdin_format.strip().split('\n'):
-            line_result = []
-            for token in line.strip().split():
-                if token[0] == 'i':
-                    (l, r) = token.split(',')
-                    line_result.append(Int(int(l.removeprefix('int(')), int(r.removesuffix(')'))))
-                elif token[0] == 's':
-                    (l, r) = token.split(',')
-                    line_result.append(String(int(l.removeprefix('string(')), int(r.removesuffix(')'))))
-                elif token[0] == 'c':
-                    line_result.append(Char())
-                else:
-                    raise ParserException(f"unknown token: {token}")
-            result.append(line_result)
-        return result
+    result = []
+    for line in stdin_format.strip().split('\n'):
+        line_result = []
+        for token in line.strip().split():
+            if token[0] == 'i':
+                (lower, upper) = token.split(',')
+                line_result.append(
+                    Int(
+                        int(lower.removeprefix('int(')),
+                        int(upper.removesuffix(')'))
+                    )
+                )
+            elif token[0] == 's':
+                (lower, upper) = token.split(',')
+                line_result.append(
+                    String(
+                        int(lower.removeprefix('string(')),
+                        int(upper.removesuffix(')'))
+                    )
+                )
+            elif token[0] == 'c':
+                line_result.append(Char())
+            else:
+                raise ParserException(f"unknown token: {token}")
+        result.append(line_result)
+    return result
 
 
 class Problem:
     """a subfolder of the input folder
 
     This class represents exactly one subfolder under the input
-    folder. Equivalence of all programs in one Problem should 
+    folder. Equivalence of all programs in one Problem should
     be checked.
     """
 
@@ -60,49 +72,49 @@ class Problem:
         self.__folder__ = folder
         self.__programs__ = []
         self.__stdin_format__ = []
-        for file in os.listdir(folder):
-            abs_file_path = folder + file
-            if file.endswith(".c") or file.endswith(".cpp"):
+        for filename in os.listdir(folder):
+            abs_file_path = folder + filename
+            if filename.endswith(".c") or filename.endswith(".cpp"):
                 self.__programs__.append(Program(abs_file_path))
-            elif file == "stdin_format.txt":
-                with open(abs_file_path) as fp:
-                    self.__stdin_format__ = fp.readlines()
+            elif filename == "stdin_format.txt":
+                with open(abs_file_path, encoding="utf-8") as file:
+                    self.__stdin_format__ = file.readlines()
 
         if not self.__stdin_format__:
             raise RuntimeError("stdin_format.txt not found")
 
-    @cache
     def programs(self) -> List[Program]:
+        """programs getter"""
         return self.__programs__
 
-    @cache
     def get_input_format(self) -> Input:
-        return Parser.parse(''.join(self.__stdin_format__))
+        """input format getter"""
+        return parse(''.join(self.__stdin_format__))
 
-    @cache
     def get_folder(self) -> str:
+        """folder path getter"""
         return self.__folder__
 
     def solve(self, is_manual: bool) -> ProblemResult:
-        neq, eq = [], []
-        tr = Closure(set())
+        """check equivalences of all programs in this Problem"""
+        neq_result, eq_result = [], []
+        transitive_closure = Closure(set())
         programs: List[Program] = self.programs()
-        for i1 in range(len(programs)):
-            for i2 in range(i1):
-                p1, p2 = programs[i1], programs[i2]
-                if not tr.contains(p1, p2):
-                    stdin = self.get_input_format()
-                    g = GeneratorRAND(stdin)
-                    if not Checker.check(p1, p2, g):
-                        neq.append((p1.get_path(), p2.get_path()))
+        for (index1, program1) in enumerate(programs):
+            for index2 in range(index1):
+                program2 = programs[index2]
+                if not transitive_closure.contains(program1, program2):
+                    gen = GeneratorRAND(self.get_input_format())
+                    if not Checker().check(program1, program2, gen):
+                        neq_result.append((program1.get_path(), program2.get_path()))
                     else:
                         if not is_manual:
-                            eq.append((p1.get_path(), p2.get_path()))
-                            tr.add(p1, p2)
+                            eq_result.append((program1.get_path(), program2.get_path()))
+                            transitive_closure.add(program1, program2)
                         else:
                             ui_ = ui.UI()
-                            diff_result = diff.DiffParser(p1, p2).parse_diff()
-                            ui_.update_text(diff_result, p1.get_path(), p2.get_path())
+                            diff_result = diff.DiffParser(program1, program2).parse_diff()
+                            ui_.update_text(diff_result, program1.get_path(), program2.get_path())
                             global EQ, NEQ
                             EQ, NEQ = False, False
 
@@ -119,11 +131,11 @@ class Problem:
                             ui_.main_loop()
 
                             if EQ:
-                                eq.append((p1.get_path(), p2.get_path()))
-                                tr.add(p1, p2)
+                                eq_result.append((program1.get_path(), program2.get_path()))
+                                transitive_closure.add(program1, program2)
                             elif NEQ:
-                                neq.append((p1.get_path(), p2.get_path()))
+                                neq_result.append((program1.get_path(), program2.get_path()))
                             else:
                                 raise RuntimeError('no button pressed')
 
-        return ProblemResult(eq, neq)
+        return ProblemResult(eq_result, neq_result)

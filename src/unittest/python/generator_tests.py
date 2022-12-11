@@ -1,6 +1,7 @@
 import unittest
 
-from generator import *
+from typing import Callable, Iterable
+from generator import GeneratorRAND, Char, String, Int
 
 
 class TestRandomGenerator(unittest.TestCase):

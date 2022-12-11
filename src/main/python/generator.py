@@ -1,22 +1,27 @@
+"""
+This module provides a random Generator to generate inputs.
+"""
 import random
 import string
 from dataclasses import dataclass
-from typing import *
+from typing import List, Iterable
 
 
 @dataclass
 class Char:
-    pass
+    """input type of Char"""
 
 
 @dataclass
 class Int:
-    mn: int
-    mx: int
+    """input type of Int with value in [mn_val, mx_val]"""
+    mn_val: int
+    mx_val: int
 
 
 @dataclass
 class String:
+    """input type of String with length in [mn_len, mx_len]"""
     mn_len: int
     mx_len: int
 
@@ -29,24 +34,15 @@ Input = List[InputLine]
 
 
 def gen_random(data: Data) -> str:
+    """generate random input for given input type"""
     match data:
         case Char():
             return random.choice(string.ascii_letters)
-        case Int(mn, mx):
-            return str(random.randint(mn, mx))
+        case Int(mn_val, mx_val):
+            return str(random.randint(mn_val, mx_val))
         case String(mn_len, mx_len):
             length = random.randint(mn_len, mx_len)
             return "".join([gen_random(Char()) for _ in range(length)])
-
-
-def gen_all(data: Data) -> List[str]:
-    match data:
-        case Char():
-            pass
-        case Int(mn, mx):
-            pass
-        case String(mn_len, mx_len):
-            pass
 
 
 class Generator:
@@ -60,21 +56,12 @@ class Generator:
         self.__stdin__ = stdin
 
     def gen(self) -> Iterable[str]:
-        pass
+        """generate lines of inputs"""
 
 
 class GeneratorRAND(Generator):
-    def __init__(self, stdin: Input) -> None:
-        super().__init__(stdin)
-
+    """random input generator"""
     def gen(self) -> Iterable[str]:
+        """generate random inputs"""
         for line in self.__stdin__:
             yield " ".join(map(gen_random, line))
-
-
-class GeneratorALL(Generator):
-    def __init__(self, stdin: Input) -> None:
-        super().__init__(stdin)
-
-    def gen(self) -> Iterable[str]:
-        pass
